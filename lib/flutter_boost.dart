@@ -69,8 +69,8 @@ class FlutterBoost {
   static void onPageStart() {
     WidgetsBinding.instance.addPostFrameCallback((Duration _) {
       singleton.channel
-          .invokeMethod<Map<String, dynamic>>('pageOnStart')
-          .then((Map<String, dynamic> pageInfo) {
+          .invokeMethod<Map<dynamic, dynamic>>('pageOnStart')
+          .then((Map<dynamic, dynamic> pageInfo) {
         if (pageInfo?.isEmpty ?? true) {
           return;
         }
