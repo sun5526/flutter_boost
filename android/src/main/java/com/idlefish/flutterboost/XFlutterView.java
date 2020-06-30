@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 //import android.graphics.Insets;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.LocaleList;
@@ -15,6 +16,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 import android.text.format.DateFormat;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -332,6 +334,9 @@ public class XFlutterView extends FrameLayout {
 
     // Status bar (top) and left/right system insets should partially obscure the content (padding).
     viewportMetrics.paddingTop = insets.getSystemWindowInsetTop();
+    if(viewportMetrics.paddingTop<=0){
+      viewportMetrics.paddingTop = getStatusBarHeight(getContext());
+    }
     viewportMetrics.paddingRight = insets.getSystemWindowInsetRight();
     viewportMetrics.paddingBottom = 0;
     viewportMetrics.paddingLeft = insets.getSystemWindowInsetLeft();
@@ -763,7 +768,7 @@ public class XFlutterView extends FrameLayout {
   @SuppressWarnings("deprecation")
   private void sendLocalesToFlutter(@NonNull Configuration config) {
     List<Locale> locales = new ArrayList<>();
-    if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
       LocaleList localeList = config.getLocales();
       int localeCount = localeList.size();
       for (int index = 0; index < localeCount; ++index) {
@@ -808,6 +813,22 @@ public class XFlutterView extends FrameLayout {
     flutterEngine.getRenderer().setViewportMetrics(viewportMetrics);
   }
 
+  /** 获取状态栏高度 */
+  public static int getStatusBarHeight(Context context) {
+    int result = 24;
+    try {
+      int resId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
+      if (resId > 0) {
+        result = context.getResources().getDimensionPixelSize(resId);
+      } else {
+        result = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                result, Resources.getSystem().getDisplayMetrics());
+      }
+    } catch (Throwable e) {
+      e.printStackTrace();
+    }
+    return result;
+  }
 
 
 }
