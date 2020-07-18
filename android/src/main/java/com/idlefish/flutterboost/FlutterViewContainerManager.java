@@ -97,7 +97,7 @@ public class FlutterViewContainerManager implements IContainerManager {
         }
 
         if (result == null) {
-            result = new HashMap<>();
+            result = new HashMap<String,Object>();
         }
 
         result.put("_requestCode__",requestCode);
