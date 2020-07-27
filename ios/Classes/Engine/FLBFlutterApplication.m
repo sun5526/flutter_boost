@@ -80,7 +80,7 @@
     if (self = [super init]) {
         _manager = [FLBFlutterContainerManager new];
         _pageResultCallbacks = NSMutableDictionary.new;
-        _callbackCache = NSMutableDictionary.new;
+       _callbackCache = NSMutableDictionary.new;
         
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(applicationWillEnterForeground:)
@@ -217,11 +217,11 @@
                       params:(NSDictionary *)urlParams
                     uniqueId:(NSString *)uniqueId
 {
-    NSString *cid = urlParams[kPageCallBackId];
-    if(cid && _callbackCache[cid]){
-        _pageResultCallbacks[uniqueId] = _callbackCache[cid];
-        [_callbackCache removeObjectForKey:cid];
-    }
+   NSString *cid = urlParams[kPageCallBackId];
+   if(cid && _callbackCache[cid]){
+       _pageResultCallbacks[uniqueId] = _callbackCache[cid];
+       [_callbackCache removeObjectForKey:cid];
+   }
 }
 
 - (void)willDeallocPageContainer:(NSString *)url
@@ -241,6 +241,14 @@
     NSString *newName = params[@"newName"];
     if (oldName!=nil && [newName isEqualToString:@"default"]) {
         [self.flutterProvider detach];
+    }
+}
+
+- (void)callResultCallback:(NSString *)callbackId result:(NSDictionary *)result {
+    if(_callbackCache[callbackId]){
+        void (^cb)(NSDictionary *) = _callbackCache[callbackId];
+        cb(result);
+        [_callbackCache removeObjectForKey:callbackId];
     }
 }
 

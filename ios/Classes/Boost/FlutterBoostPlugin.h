@@ -137,6 +137,8 @@ NS_ASSUME_NONNULL_BEGIN
 onPageFinished:(void (^)(NSDictionary *))resultCallback
   completion:(void (^)(BOOL))completion;
 
++ (void)callResultCallback:(NSString *)callbackId result:(NSDictionary *)result;
+
 //切记：在destroyPluginContext前务必将所有FlutterViewController及其子类的实例销毁。在这里是FLBFlutterViewContainer。否则会异常;以下是全部步骤
 //1. 首先通过为所有FlutterPlugin的methodChannel属性设为nil来解除其与FlutterEngine的间接强引用
 //2. 销毁所有的FlutterViewController实例（或保证所有FlutterVC已经退出），来解除其与FlutterEngine的强引用，在每个VC卸载的时候FlutterEngine会调用destroyContext
