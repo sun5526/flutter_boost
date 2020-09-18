@@ -2,10 +2,12 @@ package com.idlefish.flutterboost;
 
 import android.annotation.TargetApi;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 //import android.graphics.Insets;
 import android.content.res.Resources;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.LocaleList;
@@ -17,9 +19,12 @@ import androidx.core.view.ViewCompat;
 import android.text.format.DateFormat;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.Display;
+import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.WindowInsets;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeProvider;
@@ -338,7 +343,11 @@ public class XFlutterView extends FrameLayout {
       viewportMetrics.paddingTop = getStatusBarHeight(getContext());
     }
     viewportMetrics.paddingRight = insets.getSystemWindowInsetRight();
-    viewportMetrics.paddingBottom = 0;
+    if(getContext() instanceof Activity){
+      viewportMetrics.paddingBottom = getNavigationBarHeight((Activity)getContext());
+    } else {
+      viewportMetrics.paddingBottom = 0;
+    }
     viewportMetrics.paddingLeft = insets.getSystemWindowInsetLeft();
 
     // Bottom system inset (keyboard) should adjust scrollable bottom edge (inset).
@@ -793,10 +802,10 @@ public class XFlutterView extends FrameLayout {
    */
   private void sendUserSettingsToFlutter() {
     if(flutterEngine!=null&&flutterEngine.getSettingsChannel()!=null){
-    flutterEngine.getSettingsChannel().startMessage()
-            .setTextScaleFactor(getResources().getConfiguration().fontScale)
-            .setUse24HourFormat(DateFormat.is24HourFormat(getContext()))
-            .send();
+      flutterEngine.getSettingsChannel().startMessage()
+              .setTextScaleFactor(getResources().getConfiguration().fontScale)
+              .setUse24HourFormat(DateFormat.is24HourFormat(getContext()))
+              .send();
     }
   }
 
@@ -828,6 +837,38 @@ public class XFlutterView extends FrameLayout {
       e.printStackTrace();
     }
     return result;
+  }
+
+  public static int getNavigationBarHeight(Activity activity) {
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      Display display = activity.getWindowManager().getDefaultDisplay();
+      Point size = new Point();
+      Point realSize = new Point();
+      display.getSize(size);
+      display.getRealSize(realSize);
+      Resources resources = activity.getResources();
+      int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+      int height = resources.getDimensionPixelSize(resourceId);
+      //超出系统默认的导航栏高度以上，则认为存在虚拟导航
+      if ((realSize.y - size.y) > (height - 10)) {
+        return height;
+      }
+
+      return 0;
+    } else {
+      boolean menu = ViewConfiguration.get(activity).hasPermanentMenuKey();
+      boolean back = KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_BACK);
+      if (menu || back) {
+        return 0;
+      } else {
+        Resources resources = activity.getResources();
+        int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+        int height = resources.getDimensionPixelSize(resourceId);
+        return height;
+      }
+    }
+
   }
 
 
