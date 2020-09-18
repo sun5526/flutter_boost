@@ -204,8 +204,14 @@
     [app close:uniqueId result:resultData exts:exts completion:completion];
 }
 
++ (void)callResultCallback:(NSString *)callbackId result:(NSDictionary *)result {
+    id<FLBFlutterApplicationInterface> app = [[FlutterBoostPlugin sharedInstance] application];
+    [app callResultCallback:callbackId result:result];
+}
+
 - (void)destroyPluginContext{
     self.methodChannel = nil;
     self.application = nil;
 }
+
 @end

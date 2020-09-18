@@ -79,6 +79,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onShownContainerChanged:(NSString *)uniqueId
                          params:(NSDictionary *)params;
 
+- (void)callResultCallback:(NSString *)callbackId result:(NSDictionary *)result;
+
 @end
 NS_ASSUME_NONNULL_END
 
