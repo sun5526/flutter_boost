@@ -136,19 +136,7 @@ class FlutterBoost {
     ContainerCoordinator.singleton.registerPageBuilders(builders);
   }
 
-  Future<dynamic> open(
-    String url, {
-    Map<String, dynamic> urlParams,
-    Map<String, dynamic> exts,
-  }) {
-    final Map<String, dynamic> properties = <String, dynamic>{};
-    properties['url'] = url;
-    properties['urlParams'] = urlParams;
-    properties['exts'] = exts;
-    return channel.invokeMethod<dynamic>('openPage', properties);
-  }
-
-   Future<Map<dynamic, dynamic>> openNative(
+   Future<Map<dynamic, dynamic>> open(
     String url, {
     Map<dynamic, dynamic> urlParams,
     Map<dynamic, dynamic> exts,
