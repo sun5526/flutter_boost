@@ -1,6 +1,7 @@
 package com.idlefish.flutterboost.containers;
 
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
@@ -56,6 +57,7 @@ public class BoostFlutterActivity extends Activity
     // Default configuration.
     protected static final String DEFAULT_BACKGROUND_MODE = BackgroundMode.opaque.name();
 
+    private static XPlatformPlugin sXPlatformPlugin;
 
     public static Intent createDefaultIntent(@NonNull Context launchContext) {
         return withNewEngine().build(launchContext);
@@ -71,7 +73,7 @@ public class BoostFlutterActivity extends Activity
         private final Class<? extends BoostFlutterActivity> activityClass;
         private String backgroundMode = DEFAULT_BACKGROUND_MODE;
         private String url = "";
-        private Map<String, Object> params = new HashMap();
+        private  Map<String ,Object> params = new HashMap();
 
 
         public NewEngineIntentBuilder(@NonNull Class<? extends BoostFlutterActivity> activityClass) {
@@ -85,7 +87,7 @@ public class BoostFlutterActivity extends Activity
         }
 
 
-        public NewEngineIntentBuilder params(@NonNull Map<String, Object> params) {
+        public NewEngineIntentBuilder params(@NonNull  Map<String ,Object> params) {
             this.params = params;
             return this;
         }
@@ -185,6 +187,7 @@ public class BoostFlutterActivity extends Activity
      */
     @Nullable
     @SuppressWarnings("deprecation")
+    @SuppressLint("WrongConstant")
     private Drawable getSplashScreenFromManifest() {
         try {
             ActivityInfo activityInfo = getPackageManager().getActivityInfo(
@@ -440,8 +443,8 @@ public class BoostFlutterActivity extends Activity
 
     @Nullable
     @Override
-    public XPlatformPlugin providePlatformPlugin( @NonNull FlutterEngine flutterEngine) {
-        return new XPlatformPlugin( flutterEngine.getPlatformChannel());
+    public XPlatformPlugin providePlatformPlugin(@NonNull FlutterEngine flutterEngine) {
+        return BoostViewUtils.getPlatformPlugin(flutterEngine.getPlatformChannel());
     }
 
     /**
@@ -477,7 +480,7 @@ public class BoostFlutterActivity extends Activity
     }
 
     @Override
-    public Map getContainerUrlParams() {
+    public  Map<String ,Object> getContainerUrlParams() {
 
         if (getIntent().hasExtra(EXTRA_PARAMS)) {
             SerializableMap serializableMap = (SerializableMap) getIntent().getSerializableExtra(EXTRA_PARAMS);

@@ -38,6 +38,7 @@
 - (void)flushOngoingTouches;
 - (void)bridge_viewDidDisappear:(BOOL)animated;
 - (void)bridge_viewWillAppear:(BOOL)animated;
+- (void)surfaceUpdated:(BOOL)appeared;
 @end
 
 #pragma clang diagnostic push
@@ -69,6 +70,7 @@
 @property (nonatomic,assign) long long identifier;
 @property (nonatomic, copy) NSString *flbNibName;
 @property (nonatomic, strong) NSBundle *flbNibBundle;
+@property (nonatomic, assign) BOOL deallocNotified;
 @end
 
 #pragma clang diagnostic push
@@ -163,6 +165,7 @@ static NSUInteger kInstanceCounter = 0;
                pageName:_name
                  params:_params
                uniqueId:[self uniqueIDString]];
+        self.deallocNotified = NO;
     }
     [super willMoveToParentViewController:parent];
 }
@@ -171,23 +174,29 @@ static NSUInteger kInstanceCounter = 0;
     if (!parent) {
         //当VC被移出parent时，就通知flutter层销毁page
         [self notifyWillDealloc];
+        self.deallocNotified = YES;
     }
     [super didMoveToParentViewController:parent];
 }
 
 - (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
-    
+    __weak __typeof__(self) weakSelf = self;
     [super dismissViewControllerAnimated:flag completion:^(){
+        __strong __typeof__(weakSelf) self = weakSelf;
         if (completion) {
             completion();
         }
         //当VC被dismiss时，就通知flutter层销毁page
         [self notifyWillDealloc];
+        self.deallocNotified = YES;
     }];
 }
 
 - (void)dealloc
 {
+    if (!self.deallocNotified) {
+        [self notifyWillDealloc];
+    }
     [NSNotificationCenter.defaultCenter removeObserver:self];
 }
 
@@ -221,6 +230,12 @@ static NSUInteger kInstanceCounter = 0;
 - (void)detatchFlutterEngine
 {
     [FLUTTER_APP.flutterProvider detach];
+}
+
+- (void)surfaceUpdated:(BOOL)appeared {
+    if (self.engine && self.engine.viewController == self) {
+        [super surfaceUpdated:appeared];
+    }
 }
 
 #pragma mark - Life circle methods
@@ -264,8 +279,13 @@ static NSUInteger kInstanceCounter = 0;
                                            pageName:_name
                                              params:_params
                                            uniqueId:self.uniqueIDString];
-    //NOTES：务必在show之后再update，否则有闪烁; 或导致侧滑返回时上一个页面会和top页面内容一样
-    [self surfaceUpdated:YES];
+    //根据淘宝特价版日志证明，即使在UIViewController的viewDidAppear下，application也可能在inactive模式，此时如果提交渲染会导致GPU后台渲染而crash
+    //参考：https://github.com/flutter/flutter/issues/57973
+    //https://github.com/flutter/engine/pull/18742
+    if([UIApplication sharedApplication].applicationState == UIApplicationStateActive){
+        //NOTES：务必在show之后再update，否则有闪烁; 或导致侧滑返回时上一个页面会和top页面内容一样
+        [self surfaceUpdated:YES];
+    }
     
     [super viewDidAppear:animated];
 }
@@ -288,6 +308,10 @@ static NSUInteger kInstanceCounter = 0;
                                                   params:_params
                                                 uniqueId:self.uniqueIDString];
     [super bridge_viewDidDisappear:animated];
+    
+    if (self.engine.viewController == self) {
+        [self detatchFlutterEngine];
+    }
 }
 
 - (void)installSplashScreenViewIfNecessary {

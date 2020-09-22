@@ -1,18 +1,18 @@
 /*
  * The MIT License (MIT)
- * 
+ *
  * Copyright (c) 2019 Alibaba Group
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -58,45 +58,44 @@ class FlutterBoost {
 
   static FlutterBoost get singleton => _instance;
 
-  static ContainerManagerState get containerManager =>
-      _instance.containerManagerKey.currentState;
-
   final GlobalKey<ContainerManagerState> containerManagerKey =
       GlobalKey<ContainerManagerState>();
   final ObserversHolder _observersHolder = ObserversHolder();
   final BoostChannel _boostChannel = BoostChannel();
 
+
+
+  static ContainerManagerState get containerManager =>
+      _instance.containerManagerKey.currentState;
+
   static void onPageStart() {
-    WidgetsBinding.instance.addPostFrameCallback((Duration _) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       singleton.channel
           .invokeMethod<Map<dynamic, dynamic>>('pageOnStart')
           .then((Map<dynamic, dynamic> pageInfo) {
-        if (pageInfo?.isEmpty ?? true) {
+        if (pageInfo == null || pageInfo.isEmpty) {
           return;
         }
         if (pageInfo.containsKey('name') &&
             pageInfo.containsKey('params') &&
             pageInfo.containsKey('uniqueId')) {
           ContainerCoordinator.singleton.nativeContainerDidShow(
-            pageInfo['name'] as String,
-            (pageInfo['params'] as Map<dynamic, dynamic>)
-                ?.cast<String, dynamic>(),
-            pageInfo['uniqueId'] as String,
-          );
+              pageInfo['name'] as String,
+              (pageInfo['params'] as Map<dynamic, dynamic>)
+                  .cast<String, dynamic>(),
+              pageInfo['uniqueId'] as String);
         }
       });
     });
   }
 
-  static TransitionBuilder init({
-    TransitionBuilder builder,
-    PrePushRoute prePush,
-    PostPushRoute postPush,
-  }) {
+  static TransitionBuilder init(
+      {TransitionBuilder builder,
+      PrePushRoute prePush,
+      PostPushRoute postPush}) {
     if (Platform.isAndroid) {
       onPageStart();
     } else if (Platform.isIOS) {
-      // TODO(AlexVincent525): 未解之谜
       assert(() {
         () async {
           onPageStart();

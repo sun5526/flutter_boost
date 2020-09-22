@@ -230,7 +230,7 @@ public class FlutterActivityAndFragmentDelegate implements IFlutterViewContainer
         // Null out the platformPlugin to avoid a possible retain cycle between the plugin, this Fragment,
         // and this Fragment's Activity.
         if (platformPlugin != null) {
-            platformPlugin.detachActivity();
+            platformPlugin.detachActivity(getContextActivity());
             platformPlugin = null;
         }
 
@@ -390,7 +390,7 @@ public class FlutterActivityAndFragmentDelegate implements IFlutterViewContainer
     }
 
     @Override
-    public Map<String, Object> getContainerUrlParams() {
+    public Map<String,Object> getContainerUrlParams() {
         return this.host.getContainerUrlParams();
 
     }
@@ -482,7 +482,7 @@ public class FlutterActivityAndFragmentDelegate implements IFlutterViewContainer
 
         String getContainerUrl();
 
-        Map<String, Object> getContainerUrlParams();
+        Map<String ,Object> getContainerUrlParams();
 
 
     }
