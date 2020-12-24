@@ -20,6 +20,8 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.os.BuildCompat;
+
 import io.flutter.embedding.engine.systemchannels.PlatformChannel;
 
 public class XPlatformPlugin {
@@ -288,23 +290,20 @@ public class XPlatformPlugin {
 
 
     private List<Rect> getSystemGestureExclusionRects() {
-        if (Build.VERSION.SDK_INT >= 29) {
+        if (BuildCompat.isAtLeastQ()) {
             Window window = activity.getWindow();
             View view = window.getDecorView();
             return view.getSystemGestureExclusionRects();
         }
-
         return null;
     }
 
     private void setSystemGestureExclusionRects(ArrayList<Rect> rects) {
-        if (Build.VERSION.SDK_INT < 29) {
-            return;
+        if(BuildCompat.isAtLeastQ()){
+            Window window = activity.getWindow();
+            View view = window.getDecorView();
+            view.setSystemGestureExclusionRects(rects);
         }
-
-        Window window = activity.getWindow();
-        View view = window.getDecorView();
-        view.setSystemGestureExclusionRects(rects);
     }
 
 }
